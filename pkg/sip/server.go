@@ -43,8 +43,7 @@ import (
 )
 
 const (
-	UserAgent   = "LiveKit"
-	digestLimit = 500
+	UserAgent = "LiveKit"
 )
 
 const (
@@ -133,7 +132,7 @@ type Server struct {
 	sipUnhandled RequestHandler
 
 	imu               sync.Mutex
-	inProgressInvites []*inProgressInvite
+	inProgressInvites map[string]*inProgressInvite
 
 	closing     core.Fuse
 	cmu         sync.RWMutex
@@ -155,6 +154,7 @@ type Server struct {
 type inProgressInvite struct {
 	sipCallID string
 	challenge digest.Challenge
+	lkCallID  string // SCL_* LiveKit call ID assigned to this dialog
 }
 
 func NewServer(region string, conf *config.Config, log logger.Logger, mon *stats.Monitor, getIOClient GetIOInfoClient) *Server {
@@ -162,13 +162,14 @@ func NewServer(region string, conf *config.Config, log logger.Logger, mon *stats
 		log = logger.GetLogger()
 	}
 	s := &Server{
-		log:         log,
-		conf:        conf,
-		region:      region,
-		mon:         mon,
-		getIOClient: getIOClient,
-		activeCalls: make(map[RemoteTag]*inboundCall),
-		byLocal:     make(map[LocalTag]*inboundCall),
+		log:               log,
+		conf:              conf,
+		region:            region,
+		mon:               mon,
+		getIOClient:       getIOClient,
+		inProgressInvites: make(map[string]*inProgressInvite),
+		activeCalls:       make(map[RemoteTag]*inboundCall),
+		byLocal:           make(map[LocalTag]*inboundCall),
 	}
 	s.infos.byCallID = expirable.NewLRU[string, *inboundCallInfo](maxCallCache, nil, callCacheTTL)
 	s.initMediaRes()

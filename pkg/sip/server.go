@@ -165,7 +165,6 @@ type inProgressInvite struct {
 	sipCallID string
 	challenge digest.Challenge
 	lkCallID  string // SCL_* LiveKit call ID assigned to this dialog
-	expireAt  time.Time
 }
 
 func NewServer(region string, conf *config.Config, log logger.Logger, mon *stats.Monitor, getIOClient GetIOInfoClient) *Server {

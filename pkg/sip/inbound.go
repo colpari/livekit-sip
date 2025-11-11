@@ -588,7 +588,7 @@ type inboundCall struct {
 	call        *rpc.SIPCall
 	media       *MediaPort
 	dtmf        chan dtmf.Event // buffered
-	lkRoom      *Room           // LiveKit room; only active after correct pin is entered
+	lkRoom      RoomInterface   // LiveKit room; only active after correct pin is entered
 	callDur     func() time.Duration
 	joinDur     func() time.Duration
 	forwardDTMF atomic.Bool
@@ -622,7 +622,7 @@ func (s *Server) newInboundCall(
 		projectID:  "", // Will be set in handleInvite when available
 	}
 	// we need it created earlier so that the audio mixer is available for pin prompts
-	c.lkRoom = NewRoom(log, &c.stats.Room)
+	c.lkRoom = newRoomFunc(log, &c.stats.Room)
 	c.log = c.log.WithValues("jitterBuf", c.jitterBuf)
 	c.ctx, c.cancel = context.WithCancel(context.Background())
 	s.cmu.Lock()
